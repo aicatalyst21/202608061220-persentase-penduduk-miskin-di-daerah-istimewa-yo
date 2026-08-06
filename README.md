@@ -1,2 +1,6 @@
-# 202608061220-persentase-penduduk-miskin-di-daerah-istimewa-yo
-Publikasi Dataviz: Persentase Penduduk Miskin di Daerah Istimewa Yogyakarta
+# Persentase Penduduk Miskin di Daerah Istimewa Yogyakarta
+
+Publikasi uji yang dibuat oleh Dataviz.
+
+- Data: `data.json`
+- Spesifikasi: `spec.json`

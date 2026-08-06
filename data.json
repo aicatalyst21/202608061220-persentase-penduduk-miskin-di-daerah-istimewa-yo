@@ -1,0 +1,111 @@
+{
+  "columns": [
+    {
+      "id": "waktu",
+      "label": "Waktu",
+      "type": "category"
+    },
+    {
+      "id": "perkotaan",
+      "label": "Perkotaan",
+      "type": "number"
+    },
+    {
+      "id": "perdesaan",
+      "label": "Perdesaan",
+      "type": "number"
+    },
+    {
+      "id": "perkotaan_perdesaan",
+      "label": "Perkotaan dan Perdesaan",
+      "type": "number"
+    }
+  ],
+  "rows": [
+    {
+      "waktu": "Maret 2019",
+      "perkotaan": 10.89,
+      "perdesaan": 13.89,
+      "perkotaan_perdesaan": 11.7
+    },
+    {
+      "waktu": "September 2019",
+      "perkotaan": 10.62,
+      "perdesaan": 13.67,
+      "perkotaan_perdesaan": 11.44
+    },
+    {
+      "waktu": "Maret 2020",
+      "perkotaan": 11.53,
+      "perdesaan": 14.31,
+      "perkotaan_perdesaan": 12.28
+    },
+    {
+      "waktu": "September 2020",
+      "perkotaan": 12.17,
+      "perdesaan": 14.57,
+      "perkotaan_perdesaan": 12.8
+    },
+    {
+      "waktu": "Maret 2021",
+      "perkotaan": 12.23,
+      "perdesaan": 14.44,
+      "perkotaan_perdesaan": 12.8
+    },
+    {
+      "waktu": "September 2021",
+      "perkotaan": 11.2,
+      "perdesaan": 13.99,
+      "perkotaan_perdesaan": 11.91
+    },
+    {
+      "waktu": "Maret 2022",
+      "perkotaan": 10.56,
+      "perdesaan": 13.65,
+      "perkotaan_perdesaan": 11.34
+    },
+    {
+      "waktu": "September 2022",
+      "perkotaan": 10.64,
+      "perdesaan": 14,
+      "perkotaan_perdesaan": 11.49
+    },
+    {
+      "waktu": "Maret 2023",
+      "perkotaan": 10.27,
+      "perdesaan": 13.36,
+      "perkotaan_perdesaan": 11.04
+    },
+    {
+      "waktu": "Maret 2024",
+      "perkotaan": 10.29,
+      "perdesaan": 12.49,
+      "perkotaan_perdesaan": 10.83
+    },
+    {
+      "waktu": "September 2024",
+      "perkotaan": 10.11,
+      "perdesaan": 11.31,
+      "perkotaan_perdesaan": 10.4
+    },
+    {
+      "waktu": "Maret 2025",
+      "perkotaan": 10.16,
+      "perdesaan": 10.46,
+      "perkotaan_perdesaan": 10.23
+    },
+    {
+      "waktu": "September 2025",
+      "perkotaan": 9.99,
+      "perdesaan": 10.37,
+      "perkotaan_perdesaan": 10.08
+    },
+    {
+      "waktu": "Maret 2026",
+      "perkotaan": 9.55,
+      "perdesaan": 10.18,
+      "perkotaan_perdesaan": 9.7
+    }
+  ],
+  "warnings": []
+}

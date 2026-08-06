@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "title": "Persentase Penduduk Miskin di Daerah Istimewa Yogyakarta",
+    "language": "id",
+    "keyword": "KEMISKINAN ",
+    "source": {
+      "name": "BPS DIY",
+      "url": ""
+    },
+    "footnote": "Dibuat oleh: Kompas/Haris Firdaus",
+    "subtitle": "Grafik ini menunjukkan persentase penduduk miskin di wilayah Daerah Istimewa Yogyakarta sejak tahun 2019 sampai semester pertama 2026. "
+  },
+  "specification": {
+    "chartType": "line",
+    "categoryField": "waktu",
+    "valueFields": [
+      "perkotaan",
+      "perdesaan",
+      "perkotaan_perdesaan"
+    ],
+    "interaction": {
+      "tooltip": true,
+      "legendFilter": true,
+      "clickPopup": true,
+      "zoom": false
+    },
+    "colorPalette": "categorical",
+    "accessibility": {
+      "summary": "Line berdasarkan data yang dipilih pengguna."
+    },
+    "reason": "Dipilih secara manual oleh pengguna.",
+    "height": "tall",
+    "sortOrder": "original",
+    "showValueLabels": false
+  }
+}

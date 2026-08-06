@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualisasi data</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { color: #000; background: #f6f4ef; font-family: "Lora", Georgia, serif; }
+      * { box-sizing: border-box; }
+      body { min-width: 320px; margin: 0; }
+      main { width: min(100% - 32px, 960px); margin: 0 auto; padding: clamp(24px, 6vw, 72px) 0; }
+      article { position: relative; padding: clamp(20px, 4vw, 40px); border: 1px solid #000; background: #fff; }
+      .keyword { margin: 0 0 8px; color: #c92b2c; font: 700 .78rem/1.2 "PT Sans", Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+      h1 { max-width: 760px; margin: 0; font-family: "Lora", Georgia, serif; font-size: clamp(1.8rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.05; }
+      .subtitle { max-width: 760px; margin: 12px 0 0; color: #3b3b3b; font: 400 1rem/1.5 "Lora", Georgia, serif; }
+      .chart-scroll { max-height: 720px; margin-top: 24px; overflow: auto; }
+      #chart { width: 100%; min-height: 300px; }
+      .footnote, .source, .error { margin: 16px 0 0; font: 400 .84rem/1.5 "Lora", Georgia, serif; }
+      .source { padding-top: 12px; border-top: 1px solid #dedbd3; }
+      a { color: #00599a; }
+      .popup { position: absolute; right: 24px; bottom: 72px; display: grid; min-width: 160px; gap: 4px; padding: 14px; background: #000; color: #fff; font: 400 .85rem/1.4 "PT Sans", Arial, sans-serif; }
+      .popup[hidden] { display: none; }
+      .popup button { margin-top: 6px; border: 1px solid #fff; background: transparent; color: #fff; cursor: pointer; }
+      @media (max-width: 560px) { main { width: min(100% - 20px, 960px); padding: 10px 0; } article { padding: 18px; } }
+    </style>
+  </head>
+  <body>
+    <main><article>
+      <p id="keyword" class="keyword" hidden></p>
+      <h1 id="title">Memuat visualisasi...</h1>
+      <p id="subtitle" class="subtitle" hidden></p>
+      <div id="scroll" class="chart-scroll"><div id="chart" role="img"></div></div>
+      <p id="footnote" class="footnote" hidden></p>
+      <p id="source" class="source" hidden></p>
+      <div id="popup" class="popup" role="status" hidden><strong></strong><span></span><button type="button">Tutup</button></div>
+      <p id="error" class="error" hidden></p>
+    </article></main>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js" crossorigin="anonymous"></script>
+    <script>
+      "use strict";
+      const palettes = {
+        dataviz: ["#00599A", "#c92b2c", "#F3C727", "#3A7CA5", "#7A3E48", "#C28B00", "#5E7291", "#7B6C3A"],
+        categorical: ["#00599A", "#c92b2c", "#F3C727", "#28734A", "#76519B", "#D96B27", "#3A7CA5", "#6B6B6B"],
+        blue: ["#00599A", "#397EAE", "#6EADD1", "#A9D0E8", "#D9EAF7"],
+        red: ["#8D171D", "#C92B2C", "#DE766C", "#EFA9A1", "#F8D6D2"],
+        yellow: ["#A77400", "#D8A714", "#F3C727", "#F9DF75", "#FFF4BF"],
+        green: ["#15522D", "#28734A", "#70AF80", "#A8D2B2", "#D7EBDD"],
+        purple: ["#4C2D6D", "#76519B", "#A184C1", "#C7B1DD", "#E6DCEF"],
+        diverging: ["#c92b2c", "#EFA9A1", "#F6F4EF", "#9CC4DF", "#00599A"]
+      };
+      const text = (id, value) => {
+        const element = document.getElementById(id);
+        if (value) { element.textContent = value; element.hidden = false; }
+      };
+      const number = (row, field) => typeof row[field] === "number" && Number.isFinite(row[field]) ? row[field] : null;
+      function chartHeight(data, type, height) {
+        if (height === "compact") return 300;
+        if (height === "medium") return 450;
+        if (height === "tall") return 600;
+        return ["bar", "groupedBar", "stackedBar"].includes(type) ? Math.max(300, data.rows.length * 32 + 90) : 300;
+      }
+      function option(data, spec) {
+        const categoryColumn = data.columns.find(column => column.id === spec.categoryField);
+        const valueColumns = spec.valueFields.map(field => data.columns.find(column => column.id === field)).filter(Boolean);
+        if (!valueColumns.length) throw new Error("Kolom nilai tidak ditemukan.");
+        const interaction = { tooltip: true, legendFilter: true, clickPopup: false, ...spec.interaction };
+        const colors = palettes[spec.colorPalette] || palettes.dataviz;
+        const horizontal = ["bar", "groupedBar", "stackedBar"].includes(spec.chartType);
+        const stacked = ["stackedBar", "stackedColumn"].includes(spec.chartType);
+        const line = ["line", "area"].includes(spec.chartType);
+        if (spec.chartType === "pie") {
+          if (!categoryColumn) throw new Error("Kolom kategori tidak ditemukan.");
+          return { color: colors, textStyle: { fontFamily: "PT Sans, Arial, sans-serif" }, tooltip: { show: interaction.tooltip, trigger: "item" }, legend: { show: interaction.legendFilter, bottom: 0 }, series: [{ name: valueColumns[0].label, type: "pie", radius: ["35%", "70%"], data: data.rows.map(row => ({ name: String(row[categoryColumn.id] ?? ""), value: number(row, valueColumns[0].id) })) }] };
+        }
+        if (spec.chartType === "scatter") {
+          if (valueColumns.length < 2) throw new Error("Scatter memerlukan dua kolom nilai.");
+          return { color: colors, textStyle: { fontFamily: "PT Sans, Arial, sans-serif" }, grid: { top: 20, right: 16, bottom: 50, left: 48, containLabel: true }, tooltip: { show: interaction.tooltip, trigger: "item" }, xAxis: { type: "value", name: valueColumns[0].label }, yAxis: { type: "value", name: valueColumns[1].label }, series: [{ name: valueColumns[0].label + " / " + valueColumns[1].label, type: "scatter", data: data.rows.map(row => [number(row, valueColumns[0].id), number(row, valueColumns[1].id)]) }] };
+        }
+        if (!categoryColumn) throw new Error("Kolom kategori tidak ditemukan.");
+        const rows = [...data.rows];
+        const sort = spec.sortOrder || "original";
+        if (["bar", "column"].includes(spec.chartType) && sort !== "original") {
+          const direction = sort === "descending" ? -1 : 1;
+          rows.sort((a, b) => direction * ((number(a, valueColumns[0].id) ?? -Infinity) - (number(b, valueColumns[0].id) ?? -Infinity)));
+        }
+        if (horizontal && sort !== "original") rows.reverse();
+        const categories = rows.map(row => String(row[categoryColumn.id] ?? ""));
+        const categoryAxis = { type: "category", data: categories, axisTick: { alignWithLabel: true }, axisLabel: horizontal ? { interval: 0 } : { interval: "auto", rotate: categories.length > 8 ? 45 : 0 } };
+        const nonnegative = valueColumns.every(column => rows.every(row => (number(row, column.id) ?? 0) >= 0));
+        const valueAxis = { type: "value", min: nonnegative ? 0 : null, axisLabel: { formatter: valueColumns[0].unit ? "{value}" + valueColumns[0].unit : "{value}" } };
+        return { color: colors, textStyle: { fontFamily: "PT Sans, Arial, sans-serif" }, grid: { top: 36, right: 16, bottom: horizontal ? 50 : 88, left: horizontal ? 140 : 48, containLabel: true }, tooltip: { show: interaction.tooltip, trigger: "axis" }, legend: { show: interaction.legendFilter && valueColumns.length > 1, bottom: 0 }, xAxis: horizontal ? valueAxis : categoryAxis, yAxis: horizontal ? categoryAxis : valueAxis, series: valueColumns.map(column => ({ name: column.label, type: line ? "line" : "bar", barMaxWidth: horizontal ? 22 : 52, stack: stacked ? "total" : null, areaStyle: spec.chartType === "area" ? {} : null, emphasis: { focus: "series" }, label: { show: spec.showValueLabels !== false, position: horizontal ? "right" : "top", fontFamily: "PT Sans, Arial, sans-serif" }, data: rows.map(row => number(row, column.id)) })) };
+      }
+      Promise.all([fetch("data.json").then(response => { if (!response.ok) throw new Error("data.json gagal dimuat."); return response.json(); }), fetch("spec.json").then(response => { if (!response.ok) throw new Error("spec.json gagal dimuat."); return response.json(); }), document.fonts.ready])
+        .then(([data, publication]) => {
+          if (!window.echarts) throw new Error("Pustaka ECharts gagal dimuat.");
+          const metadata = publication.metadata || {};
+          const spec = publication.specification || {};
+          document.title = metadata.title || "Visualisasi data";
+          text("keyword", metadata.keyword);
+          document.getElementById("title").textContent = metadata.title || "Visualisasi data";
+          text("subtitle", metadata.subtitle);
+          text("footnote", metadata.footnote);
+          const source = metadata.source;
+          if (source && (source.name || typeof source === "string")) {
+            const element = document.getElementById("source");
+            element.textContent = "Sumber: ";
+            const name = typeof source === "string" ? source : source.name;
+            let safeUrl = null;
+            try { if (source.url && ["http:", "https:"].includes(new URL(source.url).protocol)) safeUrl = source.url; } catch {}
+            if (safeUrl) { const link = document.createElement("a"); link.href = safeUrl; link.target = "_blank"; link.rel = "noreferrer"; link.textContent = name; element.append(link); } else { element.append(document.createTextNode(name)); }
+            element.hidden = false;
+          }
+          const canvas = document.getElementById("chart");
+          const height = chartHeight(data, spec.chartType, spec.height || "auto");
+          canvas.style.height = height + "px";
+          canvas.setAttribute("aria-label", spec.accessibility?.summary || "Grafik: " + (metadata.title || "Visualisasi data"));
+          const chart = echarts.init(canvas, null, { renderer: "svg" });
+          chart.setOption(option(data, spec));
+          const popup = document.getElementById("popup");
+          if (spec.interaction?.clickPopup) chart.on("click", event => { if (event.componentType !== "series") return; popup.querySelector("strong").textContent = event.name; popup.querySelector("span").textContent = Array.isArray(event.value) ? event.value.join(", ") : String(event.value ?? ""); popup.hidden = false; });
+          popup.querySelector("button").addEventListener("click", () => { popup.hidden = true; });
+          new ResizeObserver(() => chart.resize()).observe(canvas);
+        })
+        .catch(error => { document.getElementById("title").textContent = "Visualisasi tidak dapat dimuat"; text("error", error.message || "Terjadi kesalahan."); });
+    </script>
+  </body>
+</html>
